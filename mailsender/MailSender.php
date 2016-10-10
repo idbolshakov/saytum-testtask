@@ -4,6 +4,7 @@ namespace Saytum\MailSender;
 
 require('UserArrayCompare.php');
 require('MailSenderNotConfigureException.php');
+require('UserDataValidator.php');
 
 /**
  * MailSender
@@ -18,9 +19,8 @@ class MailSender {
 
     private static $instance = null;
 
-    private $config          = null;
-    private $invalidUsers    = null;
-
+    private $config            = null;
+    private $userDataValidator = null;
 
     private function __construct() {}
 
@@ -85,7 +85,8 @@ class MailSender {
      */
     public function configure($config) {
 
-        $this->config = $config;
+        $this->config            = $config;
+        $this->userDataValidator = new UserDataValidator($config); 
 
         return $this;
     }
@@ -147,26 +148,6 @@ class MailSender {
     }
 
     private function sendToNextUserIfValid($data) {
-
-        if ($this->validateEmail($data)) {
-
-        }
-    }
-
-    private function validateEmail($data) {
-
-        if ( !\filter_var($data['email'], FILTER_VALIDATE_EMAIL) ) {
-
-            $this->invalidUsers[] = array(
-
-                'userdata' => $data, 
-                'error'    => 'invalid email format'
-            ); 
-
-            return false;
-        }
-
-        return true;
     }
 
     private function sendEmail($data) {
@@ -175,9 +156,11 @@ class MailSender {
 
     private function sendReport() {
 
-        for ($i=0, $l=count($this->invalidUsers); $i<$l; $i++) {
+        $invalidUsersArray = $this->userDataValidator->getInvalidUsersArray();
 
-            $user = $this->invalidUsers[$i];
+        for ($i=0, $l=\count($invalidUsersArray); $i<$l; $i++) {
+
+            $user = $ivalidUsersArray[$i];
 
             echo $user['userdata']['email'].' - '.$user['error'].'<br>';
         }
