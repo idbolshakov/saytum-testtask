@@ -3,8 +3,8 @@
 namespace Saytum\MailSender;
 
 require('UserArrayCompare.php');
-require('MailSenderNotConfigureException.php');
 require('UserDataValidator.php');
+require('exceptions/MailSenderNotConfigureException.php');
 
 /**
  * MailSender
@@ -71,14 +71,14 @@ class MailSender {
      *
      *   // диапазон времени, в который разрешена рассылка
      *   // используется если time_restriction=true
-     *   'allow_time'         => array('min' => {time}, 'end' => {time}),
+     *   'allow_time'         => array('start' => {HH:MM}, 'end' => {HH:MM}),
      *
      *   // true - включаем ограничения по возрасту 
      *   'age_restriction'    => {boolean},
      *
      *   // диапазон разрешенного для рассылки возраста
      *   // используется если age_restriction=true
-     *   'allow_age'          => array('age' => {int}, 'max' => {int}),
+     *   'allow_age'          => array('min' => {int}, 'max' => {int}),
      * );
      *
      * @param @config - массив с конфигом 
@@ -118,7 +118,7 @@ class MailSender {
 
         for ($i=0, $l=count($array); $i<$l; $i++) {
 
-            $this->sendToNextUserIfValid($array[$i]);
+            $this->sendEmailIfValid($array[$i]);
         }
 
         $this->sendReport();
@@ -128,7 +128,7 @@ class MailSender {
 
         if (\is_null($this->config)) {
 
-            throw new Saytum\MailSender\MailSenderNotConfigureException();
+            throw new Saytum\MailSender\Exceptions\MailSenderNotConfigureException();
         }
     }
 
@@ -140,14 +140,13 @@ class MailSender {
         $comparator = new UserArrayCompare($key, $ascending);
 
         \usort($array, array($comparator, 'compare'));
-
-        foreach($array as $k => $value) {
-
-            echo $value[$key]."<br><br>";
-        }
     }
 
-    private function sendToNextUserIfValid($data) {
+    private function sendEmailIfValid($data) {
+
+        if ($this->userDataValidator->validate($data)) {
+
+        }
     }
 
     private function sendEmail($data) {
@@ -160,7 +159,7 @@ class MailSender {
 
         for ($i=0, $l=\count($invalidUsersArray); $i<$l; $i++) {
 
-            $user = $ivalidUsersArray[$i];
+            $user = $invalidUsersArray[$i];
 
             echo $user['userdata']['email'].' - '.$user['error'].'<br>';
         }

@@ -3,7 +3,6 @@
 require('mailsender/MailSender.php');
 require('userData.php');
 
-
 $mailSenderConfig = array(
 
     'sorting_key'        => 'date_registration',
@@ -11,9 +10,9 @@ $mailSenderConfig = array(
     'domain_restriction' => 'true',
     'allow_domains'      => array('gmail.com', 'saytum.ru'),
     'time_restriction'   => 'true',
-    'allow_time'         => array('min_time' => 'time', 'max_time' => 'time'),
+    'allow_time'         => array('start' => '10:00', 'end' => '23:00'),
     'age_restriction'    => 'true',
-    'allow_age'          => array('min_age' => 'age', 'max_age' => 'age'),
+    'allow_age'          => array('min' => '18', 'max' => '150'),
 );
 
 Saytum\MailSender\MailSender::getInstance()

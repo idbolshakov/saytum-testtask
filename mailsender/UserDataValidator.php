@@ -2,6 +2,8 @@
 
 namespace Saytum\MailSender;
 
+require('exceptions/TimeRestrictionException.php');
+
 /**
  * UserDataValidator
  *
@@ -35,16 +37,35 @@ class UserDataValidator {
      * то сохраняем их в массив $this->invalidUsersArray
      *
      * @return true - данные валидны, false - данные не валидны
+     * @throw TimeRestrictionException - в конфигурациизаданы интервалы в 
+     * которые разрешается отправлять рассылку и мы в них не попали
      */
     public function validate($userData) {
 
-        if ( 
-            $this->validateEmail($userData) &&
-            $this->validateDomainRestriction($userData)
+        if (!$this->validateTimeRestriction() || 
+            !$this->validateEmail($userData) ||
+            !$this->validateDomainRestriction($userData) ||
+            !$this->validateAgeRestriction($userData)
         ) {
 
+            return false;
+        } 
+
+        return true;
+    }
+
+    private function validateTimeRestriction() {
+
+        $minTime = \strtotime($this->config['allow_time']['start']);
+        $maxTime = \strtotime($this->config['allow_time']['end']);
+        $now     = \time();
+
+        if ($now > $minTime && $now < $maxTime) {
+
             return true;
-        }
+        } 
+
+        throw new \Saytum\MailSender\Exceptions\TimeRestrictionException();
 
         return false;
     }
@@ -53,7 +74,7 @@ class UserDataValidator {
 
         if ( !\filter_var($data['email'], FILTER_VALIDATE_EMAIL) ) {
 
-            $this->invalidUsers[] = array(
+            $this->invalidUsersArray[] = array(
 
                 'userdata' => $data, 
                 'error'    => 'invalid email format'
@@ -67,7 +88,58 @@ class UserDataValidator {
 
     private function validateDomainRestriction($data) {
 
+        $domain = $this->getDomain($data['email']);
+    
+        if ( 
+            $this->config['domain_restriction'] && 
+            !\in_array($domain, $this->config['allow_domains'])
+        ) { 
+
+            $this->invalidUsersArray[] = array(
+
+                'userdata' => $data, 
+                'error'    => 'the domain prohibited'
+            ); 
+
+            return false;
+        }
+
+        return true;
     }
+
+    private function getDomain($email) {
+
+        $emailPartsArray = \explode('@', $email);
+        $domain = '';
+
+        if (\count($emailPartsArray) > 1) {
+
+            $domain = $emailPartsArray[1];
+        }
+
+        return $domain;
+    }
+
+    private function validateAgeRestriction($data) {
+
+        $age     = $data['age'];
+        $min     = $this->config['allow_age']['min'];
+        $max     = $this->config['allow_age']['max'];
+
+        if ( $this->config['age_restriction'] && ($age<$min || $age>$max) ) {
+
+            $this->invalidUsersArray[] = array(
+
+                'userdata' => $data, 
+                'error'    => 'the age prohibited'
+            ); 
+
+            return false;
+        }
+
+        return true;
+    }
+
 
     /**
      * getInvalidUsersArray

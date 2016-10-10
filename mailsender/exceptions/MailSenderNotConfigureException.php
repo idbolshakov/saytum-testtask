@@ -1,6 +1,6 @@
 <?php
 
-namespace Saytum\MailSender;
+namespace Saytum\MailSender\Exceptions;
 
 /**
  * MailSenderNotConfigureException
