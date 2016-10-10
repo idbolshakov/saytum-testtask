@@ -4,7 +4,11 @@ namespace Saytum\MailSender;
 
 require('UserArrayCompare.php');
 require('UserDataValidator.php');
+
 require('exceptions/MailSenderNotConfigureException.php');
+
+require('templates/UserTemplate.php');
+require('templates/ReportTemplate.php');
 
 /**
  * MailSender
@@ -21,6 +25,8 @@ class MailSender {
 
     private $config            = null;
     private $userDataValidator = null;
+
+    private $sendedCount       = 0;
 
     private function __construct() {}
 
@@ -53,6 +59,9 @@ class MailSender {
      * формат массива с конфигурационной информацией
      *
      * array(
+     *   // адрес для отправки отчета по рассылке
+     *   'report_email'       => {email address string}
+     *
      *   // ключ по которому будем сортировать массив пользователей
      *   'sorting_key'        => 'date_registration',
      *
@@ -116,6 +125,8 @@ class MailSender {
 
         $this->sortArray($array);
 
+        $this->sendedCount = 0;
+
         for ($i=0, $l=count($array); $i<$l; $i++) {
 
             $this->sendEmailIfValid($array[$i]);
@@ -146,23 +157,40 @@ class MailSender {
 
         if ($this->userDataValidator->validate($data)) {
 
+            $this->sendEmail($data);
         }
     }
 
     private function sendEmail($data) {
 
+        $template = new Templates\UserTemplate($data);
+
+       \mail(
+            $template->getTo(), 
+            $template->getSubject(), 
+            $template->getMessage(), 
+            $template->getHeaders());
+
+        $this->sendedCount += 1;
     }
 
     private function sendReport() {
-
+        
+        $config            = $this->config;
+        $sendedCount       = $this->sendedCount;
         $invalidUsersArray = $this->userDataValidator->getInvalidUsersArray();
 
-        for ($i=0, $l=\count($invalidUsersArray); $i<$l; $i++) {
-
-            $user = $invalidUsersArray[$i];
-
-            echo $user['userdata']['email'].' - '.$user['error'].'<br>';
-        }
+        $template = new Templates\ReportTemplate(
+                                                $config, 
+                                                $sendedCount, 
+                                                $invalidUsersArray
+        );
+        
+        \mail(
+            $template->getTo(), 
+            $template->getSubject(), 
+            $template->getMessage(), 
+            $template->getHeaders());
     }
 }
 ?>

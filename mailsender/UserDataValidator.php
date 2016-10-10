@@ -56,18 +56,23 @@ class UserDataValidator {
 
     private function validateTimeRestriction() {
 
-        $minTime = \strtotime($this->config['allow_time']['start']);
-        $maxTime = \strtotime($this->config['allow_time']['end']);
-        $now     = \time();
+        if ($this->config['time_restriction']) {
 
-        if ($now > $minTime && $now < $maxTime) {
+            $minTime = \strtotime($this->config['allow_time']['start']);
+            $maxTime = \strtotime($this->config['allow_time']['end']);
+            $now     = \time();
 
-            return true;
-        } 
+            if ($now > $minTime && $now < $maxTime) {
 
-        throw new \Saytum\MailSender\Exceptions\TimeRestrictionException();
+                return true;
+            } 
 
-        return false;
+            throw new \Saytum\MailSender\Exceptions\TimeRestrictionException();
+
+            return false;
+        }
+        
+        return true;
     }
 
     private function validateEmail($data) {
