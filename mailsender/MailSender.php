@@ -50,6 +50,36 @@ class MailSender {
      * сохраняем конфигурацию
      * MailSender'a
      *
+     * формат массива с конфигурационной информацией
+     *
+     * array(
+     *   // ключ по которому будем сортировать массив пользователей
+     *   'sorting_key'        => 'date_registration',
+     *
+     *   // true - по возрастанию, false - по убыванию
+     *   'sorting_ascending'  => 'true',
+     *
+     *   // true - включаем ограничение на рассылку, false - выключаем
+     *   'domain_restriction' => 'true',
+     *   
+     *   // разрешенные домены
+     *   // испoльзуется если domain_restriction = true
+     *   'allow_domains'      => array('gmail.com', 'saytum.ru'),
+     *   
+     *   // true - включаем ограничения на время рассылки, false - выключаем
+     *   'time_restriction'   => {boolean},
+     *
+     *   // диапазон времени, в который разрешена рассылка
+     *   // используется если time_restriction=true
+     *   'allow_time'         => array('min' => {time}, 'end' => {time}),
+     *
+     *   // true - включаем ограничения по возрасту 
+     *   'age_restriction'    => {boolean},
+     *
+     *   // диапазон разрешенного для рассылки возраста
+     *   // используется если age_restriction=true
+     *   'allow_age'          => array('age' => {int}, 'max' => {int}),
+     * );
      *
      * @param @config - массив с конфигом 
      */
