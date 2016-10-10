@@ -1,6 +1,6 @@
 <?php
 
-namespace Saytum;
+//namespace Saytum;
 
 /**
  * MailSender
@@ -13,7 +13,7 @@ namespace Saytum;
  */
 class MailSender {
 
-    private $instance;
+    private static $instance;
 
     private function __construct() {}
 
@@ -29,12 +29,16 @@ class MailSender {
      */
     static public function getInstance() {
 
-        if (is_null($this->instance) {
+        if (is_null(self::$instance)) {
 
-            $this->instance = new Saytum\MailSender();
+            self::$instance = new self();
         }
 
-        return $this->instance;
+        return self::$instance;
+    }
+
+    public function send() {
+
     }
 }
 ?>
